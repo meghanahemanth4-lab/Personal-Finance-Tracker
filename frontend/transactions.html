@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transactions | Personal Finance Tracker</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Transactions</h1>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="categories.html">Categories</a>
+      <a href="profile.html">Profile</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <main class="transactions">
+    <h2>Add New Transaction</h2>
+    <form id="transactionForm">
+      <input type="text" id="title" placeholder="Description" required />
+      <input type="number" id="amount" placeholder="Amount" required />
+      
+      <select id="type" required>
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+
+      <select id="category" required>
+        <option value="">Select Category</option>
+      </select>
+
+      <button type="submit">Add</button>
+    </form>
+
+    <h2>Transaction History</h2>
+    <ul class="transaction-list" id="transactionList">
+      <li>No transactions yet.</li>
+    </ul>
+  </main>
+
+  <script>
+    let editTransactionId = null;
+
+    async function loadCategories() {
+      const categorySelect = document.getElementById("category");
+      try {
+        const res = await fetch("http://localhost:5000/api/categories");
+        const categories = await res.json();
+        categories.forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat.name;
+          option.textContent = cat.name;
+          categorySelect.appendChild(option);
+        });
+      } catch (err) {
+        console.error("Error loading categories", err);
+      }
+    }
+
+    document.getElementById("transactionForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("title").value;
+      const amount = Number(document.getElementById("amount").value);
+      const type = document.getElementById("type").value;
+      const category = document.getElementById("category").value;
+
+      const transaction = { name, amount, type, category };
+
+      try {
+        const url = editTransactionId 
+          ? `http://localhost:5000/api/transactions/${editTransactionId}` 
+          : "http://localhost:5000/api/transactions";
+
+        const method = editTransactionId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transaction),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed");
+
+        alert(editTransactionId ? "Transaction updated!" : "Transaction added!");
+        document.getElementById("transactionForm").reset();
+        editTransactionId = null;
+        fetchTransactions();
+      } catch (err) {
+        console.error("Transaction error:", err);
+        alert("Failed to process transaction.");
+      }
+    });
+
+    async function fetchTransactions() {
+      const list = document.getElementById("transactionList");
+      list.innerHTML = '<li>Loading...</li>';
+
+      try {
+        const res = await fetch("http://localhost:5000/api/transactions");
+        const data = await res.json();
+
+        if (data.length === 0) {
+          list.innerHTML = '<li>No transactions yet.</li>';
+          return;
+        }
+
+        list.innerHTML = '';
+        data.forEach(txn => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            ${txn.name} - ₹${txn.amount} (${txn.type}, ${txn.category})
+            <button onclick="startEdit('${txn._id}', '${txn.name}', ${txn.amount}, '${txn.type}', '${txn.category}')">Edit</button>
+            <button onclick="deleteTransaction('${txn._id}')">Delete</button>
+          `;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Fetch error:", err);
+        list.innerHTML = '<li>Error loading transactions.</li>';
+      }
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/transactions/${id}`, {
+          method: "DELETE",
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Delete failed");
+
+        alert("Transaction deleted!");
+        fetchTransactions();
+      } catch (err) {
+        console.error("Delete error:", err);
+        alert("Failed to delete transaction.");
+      }
+    }
+
+    function startEdit(id, name, amount, type, category) {
+      document.getElementById("title").value = name;
+      document.getElementById("amount").value = amount;
+      document.getElementById("type").value = type;
+      document.getElementById("category").value = category;
+      editTransactionId = id;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCategories();
+      fetchTransactions();
+    });
+  </script>
+</body>
+</html>

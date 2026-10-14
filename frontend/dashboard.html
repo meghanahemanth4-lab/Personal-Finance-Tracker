@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Personal Finance Tracker</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .chart-container {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto !important;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dashboard</h1>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="categories.html">Categories</a>
+      <a href="profile.html">Profile</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
+  </header>
+
+  <main class="dashboard">
+    <section class="summary-box">
+      <h2>Summary</h2>
+      <p><strong>Total Income:</strong> ₹<span id="totalIncome">0</span></p>
+      <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
+      <p><strong>Balance:</strong> ₹<span id="balance">0</span></p>
+    </section>
+
+    <section>
+      <h2>Income vs Expenses</h2>
+      <div class="chart-container">
+        <canvas id="incomeExpenseChart"></canvas>
+      </div>
+    </section>
+
+    <section>
+      <h2>Expenses by Category</h2>
+      <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function fetchTransactions() {
+      try {
+        const res = await fetch("http://localhost:5000/api/transactions");
+        const data = await res.json();
+
+        let income = 0, expense = 0, categoryTotals = {};
+
+        data.forEach(txn => {
+          if (txn.type === "income") {
+            income += txn.amount;
+          } else if (txn.type === "expense") {
+            expense += txn.amount;
+            categoryTotals[txn.category] = (categoryTotals[txn.category] || 0) + txn.amount;
+          }
+        });
+
+        document.getElementById("totalIncome").textContent = income;
+        document.getElementById("totalExpenses").textContent = expense;
+        document.getElementById("balance").textContent = income - expense;
+
+        renderIncomeExpenseChart(income, expense);
+        renderCategoryChart(categoryTotals);
+
+      } catch (err) {
+        console.error("Error fetching transactions:", err);
+      }
+    }
+
+    function renderIncomeExpenseChart(income, expense) {
+      new Chart(document.getElementById("incomeExpenseChart"), {
+        type: "doughnut",
+        data: {
+          labels: ["Income", "Expenses"],
+          datasets: [{
+            data: [income, expense],
+            backgroundColor: ["#4CAF50", "#F44336"]
+          }]
+        }
+      });
+    }
+
+    function renderCategoryChart(categoryTotals) {
+      const ctx = document.getElementById("categoryChart");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: Object.keys(categoryTotals),
+          datasets: [{
+            label: "Expenses",
+            data: Object.values(categoryTotals),
+            backgroundColor: "#FF9800"
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchTransactions);
+  </script>
+
+  <!-- Firebase logout script - do NOT change anything above -->
+  <script type="module">
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    const auth = getAuth();
+
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault(); // Prevent default link behavior
+      signOut(auth).then(() => {
+        // On successful logout, redirect to login page
+        window.location.href = 'login.html';
+      }).catch((error) => {
+        console.error('Error logging out:', error);
+      });
+    });
+  </script>
+</body>
+</html>

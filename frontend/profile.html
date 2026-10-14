@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile | Personal Finance Tracker</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Your Profile</h1>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="transactions.html">Transactions</a>
+      <a href="categories.html">Categories</a>
+      <a href="profile.html">Profile</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <main class="profile-container">
+    <section class="summary-box">
+      <h2>Account Info</h2>
+      <p><strong>Email:</strong> <span id="userEmail">Loading...</span></p>
+      <p><strong>Created On:</strong> <span id="createdAt">Loading...</span></p>
+    </section>
+
+    <section class="summary-box">
+      <h2>Account Controls</h2>
+      <button onclick="deleteAccount()" style="background-color: red; color: white;">Delete My Account</button>
+    </section>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, deleteUser, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5x_NQEGA7J8lnnNmZWPwlHFkkIE1a5jc",
+      authDomain: "finance-tracker-1f1c6.firebaseapp.com",
+      projectId: "finance-tracker-1f1c6",
+      storageBucket: "finance-tracker-1f1c6.appspot.com",
+      messagingSenderId: "776367091567",
+      appId: "1:776367091567:web:cfc39bda4217e59f42429a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("userEmail").textContent = user.email;
+        const createdAt = new Date(user.metadata.creationTime).toLocaleDateString();
+        document.getElementById("createdAt").textContent = createdAt;
+      } else {
+        window.location.href = "login.html"; // Not logged in
+      }
+    });
+
+    window.logout = function () {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    };
+
+    window.deleteAccount = function () {
+      const confirmation = confirm("Are you sure you want to permanently delete your account?");
+      if (!confirmation) return;
+
+      const user = auth.currentUser;
+      deleteUser(user).then(() => {
+        alert("Account deleted.");
+        window.location.href = "signup.html";
+      }).catch((error) => {
+        alert("Error deleting account: " + error.message);
+      });
+    };
+  </script>
+</body>
+</html>

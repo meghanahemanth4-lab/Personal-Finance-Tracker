@@ -1,0 +1,114 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-image: url('../images/finance.jpg'); 
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  color: #333;
+}
+
+
+header {
+  background-color: #FF5722; 
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a {
+  margin: 0 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+  color: #FFEB3B; 
+}
+
+.login-container, .dashboard, .transactions, .categories {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+}
+
+input, select, button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+button {
+  background-color: #FF5722; 
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #E64A19; 
+}
+
+.summary-box {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #FFE082; 
+  text-align: center;
+  color: #212121;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.edit-btn {
+  background-color: #FF5722;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 5px;
+  font-weight: bold;
+}
+
+.edit-btn:hover {
+  background-color: #E64A19;
+}
+
+.delete-btn {
+  background-color: #F44336; /* red */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-btn:hover {
+  background-color: #D32F2F;
+}
+
+.profile-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
